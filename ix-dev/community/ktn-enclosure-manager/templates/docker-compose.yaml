@@ -1,0 +1,71 @@
+{% set tpl = ix_lib.base.render.Render(values) %}
+
+{% set c = tpl.add_container(values.consts.app_name, "image") %}
+{% do c.set_user(0, 0) %}
+{#
+  The container starts as root so the privileged IDENT helper can bind its
+  socket and open the enclosure; the entrypoint immediately drops the web
+  process to uid/gid 1000 with setpriv. The helper is the only component that
+  stays privileged, and it accepts nothing but identify_on / identify_off /
+  read-only SES page reads over a unix socket.
+#}
+{% do c.restart.set_policy("unless-stopped") %}
+{% do c.healthcheck.set_test("curl", {"port": values.consts.internal_port, "path": "/healthz"}) %}
+
+{# ------------------------------------------------------------- privileges #}
+{% do c.clear_caps() %}
+{% do c.add_caps(["SETUID", "SETGID"]) %}
+{# no-new-privileges is set by the library for every container. #}
+
+{# ------------------------------------------------------------------ device #}
+{#
+  ':rw' is required even though only read-only pages are ever issued: sg_ses
+  submits SCSI commands through the SG_IO ioctl, which the device cgroup counts
+  as a write. This addresses the enclosure processor, not disk data.
+#}
+{% do c.devices.add_device(values.enclosure.sg_device, values.enclosure.sg_device, "rwm") %}
+
+{# ------------------------------------------------------------------- mounts #}
+{% do c.add_storage("/data", values.storage.data) %}
+{#
+  Plain 0770 here: the catalog library validates the mode against
+  ^0[0-7]{3}$, so a setgid mode cannot be expressed. The entrypoint applies
+  the setgid bit itself at startup, which is more robust anyway - it no longer
+  depends on the deployment getting the mode right.
+#}
+{% do c.add_storage("/run/ktn", {"type": "tmpfs", "tmpfs_config": {"mode": "0770", "uid": 0, "gid": values.consts.app_group_id}}) %}
+
+{# -------------------------------------------------------------- environment #}
+{% do c.environment.add_env("KTN_DATA_DIR", "/data") %}
+{% do c.environment.add_env("KTN_PORT", values.consts.internal_port) %}
+{% do c.environment.add_env("KTN_SYSFS_ROOT", "/sys") %}
+{% do c.environment.add_env("KTN_ENCLOSURE_ALLOWLIST", values.enclosure.allowlist) %}
+{% do c.environment.add_env("KTN_TRUENAS_URL", values.truenas.url) %}
+{% do c.environment.add_env("KTN_TRUENAS_API_KEY", values.truenas.api_key) %}
+{% do c.environment.add_env("KTN_TRUENAS_VERIFY_TLS", values.truenas.verify_tls) %}
+
+{% do c.environment.add_env("KTN_IDENT_HELPER_SOCKET", values.consts.ident_socket) %}
+{# Access control. The LED write is gated separately from the read surface, so
+   opening the dashboard never opens the write as a side effect. #}
+{% do c.environment.add_env("KTN_AUTH_REQUIRED", values.access.auth_required) %}
+{% do c.environment.add_env("KTN_ALLOW_ANONYMOUS_IDENT", values.access.allow_anonymous_ident) %}
+
+{# ------------------------------------------------------------------- ports #}
+{% if values.network.web_port.bind_mode %}
+{% do c.add_port(values.network.web_port, {"container_port": values.consts.internal_port}) %}
+{% endif %}
+
+{# Resources come from values.resources; the library applies them. #}
+
+{% do tpl.portals.add(values.network.web_port, {"name": "Web UI"}) %}
+
+{% do tpl.notes.add_warning(
+  "First run has no account and no default password. Open the Web UI and create
+   the administrator before exposing this app to your network."
+) %}
+{% do tpl.notes.add_warning(
+  "The application data dataset must be writable by uid 1000. If you chose a
+   Host Path, run: chown -R 1000:1000 <path>"
+) %}
+
+{{ tpl.render() | tojson }}
