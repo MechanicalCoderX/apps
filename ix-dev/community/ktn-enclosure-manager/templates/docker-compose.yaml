@@ -10,7 +10,7 @@
   read-only SES page reads over a unix socket.
 #}
 {% do c.restart.set_policy("unless-stopped") %}
-{% do c.healthcheck.set_test("curl", {"port": values.consts.internal_port, "path": "/healthz"}) %}
+{% do c.healthcheck.use_built_in() %}
 
 {# ------------------------------------------------------------- privileges #}
 {% do c.clear_caps() %}
