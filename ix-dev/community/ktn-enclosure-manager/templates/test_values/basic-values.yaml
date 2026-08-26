@@ -17,7 +17,7 @@ truenas:
 network:
   web_port:
     bind_mode: published
-    port_number: 8420
+    port_number: 30420
     host_ips: []
 
 ix_volumes:
