@@ -28,6 +28,7 @@ storage:
     type: ix_volume
     ix_volume_config:
       dataset_name: data
+      create_host_path: true
 
 resources:
   limits:
