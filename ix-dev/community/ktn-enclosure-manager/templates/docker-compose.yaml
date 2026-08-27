@@ -13,7 +13,8 @@
 {% do c.healthcheck.use_built_in() %}
 
 {# ------------------------------------------------------------- privileges #}
-{% do c.clear_caps() %}
+{# The library drops ALL capabilities by default; grant back only the two the
+   entrypoint's setpriv drop needs. #}
 {% do c.add_caps(["SETUID", "SETGID"]) %}
 {# no-new-privileges is set by the library for every container. #}
 

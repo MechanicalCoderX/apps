@@ -15,7 +15,7 @@ description: Physical drive-bay map, chassis telemetry and IDENT LED control for
   disk shelves attached to TrueNAS SCALE.
 home: https://github.com/MechanicalCoderX/ktn-enclosure-manager
 host_mounts: []
-icon: https://raw.githubusercontent.com/MechanicalCoderX/ktn-enclosure-manager/main/docs/images/icon.png
+icon: https://media.sys.truenas.net/apps/ktn-enclosure-manager/icons/icon.svg
 keywords:
 - enclosure
 - ses
@@ -45,9 +45,9 @@ run_as_context:
   uid: 0
   user_name: root
 screenshots:
-- https://raw.githubusercontent.com/MechanicalCoderX/ktn-enclosure-manager/main/docs/images/drive-map-dark.png
-- https://raw.githubusercontent.com/MechanicalCoderX/ktn-enclosure-manager/main/docs/images/bay-detail.png
-- https://raw.githubusercontent.com/MechanicalCoderX/ktn-enclosure-manager/main/docs/images/chassis.png
+- https://media.sys.truenas.net/apps/ktn-enclosure-manager/screenshots/screenshot1.png
+- https://media.sys.truenas.net/apps/ktn-enclosure-manager/screenshots/screenshot2.png
+- https://media.sys.truenas.net/apps/ktn-enclosure-manager/screenshots/screenshot3.png
 sources:
 - https://github.com/MechanicalCoderX/ktn-enclosure-manager
 title: KTN Enclosure Manager
