@@ -29,8 +29,11 @@ identity.
 
 ## Identify (LED) control
 
-Off by default. Enabling it runs the container with AppArmor unconfined,
-because Docker's default profile denies all writes under `/sys` regardless of
-user or capabilities. Everything except the Identify button works with it off.
+The Identify button lights a bay's LED with a SES `SEND DIAGNOSTIC` command
+through the passed-in `/dev/sg*` node. A small root helper is the only
+component allowed to issue it; the web process (uid 1000) can request nothing
+but identify on/off and read-only SES pages over a unix socket. All chassis
+and bay telemetry uses read-only device opens; the write-open exists solely
+for this one command. No `/sys` writes, no AppArmor changes.
 
-See SECURITY.md in the project repository for the full reasoning.
+See SECURITY.md in the project repository for the measured permission floor.

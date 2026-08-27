@@ -1,10 +1,11 @@
 annotations:
-  min_scale_version: 24.10.0
+  min_scale_version: 24.10.2.2
 app_version: 1.5.3
 capabilities:
 - description: Needed to drop the web process from root to uid 1000 at startup.
   name: SETUID
-- description: Needed to drop the web process from root to gid 1000 at startup.
+- description: Needed to drop the web process from root to gid 1000 at startup
+    and for the IDENT helper to bind its socket with group 1000.
   name: SETGID
 categories:
 - storage
